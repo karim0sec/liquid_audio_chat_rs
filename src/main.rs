@@ -4,7 +4,7 @@ mod api;
 mod audio;
 
 use api::{
-    stream_chat, stream_single_shot, process_stream, ChatMessage, StreamStats,
+    stream_chat, stream_single_shot, process_stream, ChatMessage, StreamStats, MessageContent,
 };
 use audio::{AudioPlayer, AudioRecorder, PlaybackHandle};
 use clap::Parser;
@@ -338,15 +338,13 @@ async fn run_request(
         if *is_first_message {
             messages.push(ChatMessage {
                 role: "system".into(),
-                content: Some(SYSTEM_INTERLEAVED.into()),
-                content_array: None,
+                content: MessageContent::Text(SYSTEM_INTERLEAVED.into()).into(),
             });
         }
         if let Some(t) = text_input {
             messages.push(ChatMessage {
                 role: "user".into(),
-                content: Some(t.to_string()),
-                content_array: None,
+                content: MessageContent::Text(t.to_string()).into(),
             });
         }
         if let Some(wav) = wav_data {

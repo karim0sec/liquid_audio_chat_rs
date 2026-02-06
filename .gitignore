@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 ./target/*
+=======
+target/
+>>>>>>> 5ed8c02 (init rust project)

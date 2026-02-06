@@ -11,10 +11,22 @@ const B64: base64::engine::general_purpose::GeneralPurpose = base64::engine::gen
 #[derive(Clone, Serialize)]
 pub struct ChatMessage {
     pub role: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content_array: Option<Vec<serde_json::Value>>,
+    pub content: serde_json::Value,
+}
+
+#[derive(Clone)]
+pub enum MessageContent {
+    Text(String),
+    Array(Vec<serde_json::Value>),
+}
+
+impl From<MessageContent> for serde_json::Value {
+    fn from(content: MessageContent) -> Self {
+        match content {
+            MessageContent::Text(text) => serde_json::Value::String(text),
+            MessageContent::Array(array) => serde_json::Value::Array(array),
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -77,8 +89,7 @@ pub async fn stream_single_shot(
     };
     let mut messages = vec![ChatMessage {
         role: "system".into(),
-        content: Some(system.into()),
-        content_array: None,
+        content: MessageContent::Text(system.into()).into(),
     }];
     if mode == "asr" {
         if let Some(wav) = wav_data {
@@ -88,8 +99,7 @@ pub async fn stream_single_shot(
         if let Some(t) = text {
             messages.push(ChatMessage {
                 role: "user".into(),
-                content: Some(t.to_string()),
-                content_array: None,
+                content: MessageContent::Text(t.to_string()).into(),
             });
         }
     }
@@ -129,8 +139,7 @@ pub fn create_audio_message(wav_data: &[u8]) -> ChatMessage {
     })];
     ChatMessage {
         role: "user".into(),
-        content: None,
-        content_array: Some(content_array),
+        content: MessageContent::Array(content_array).into(),
     }
 }
 
